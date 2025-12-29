@@ -3,7 +3,7 @@ pipeline {
 
   environment {
     IMAGE_NAME = "sunaodisha/sockshop-frontend"
-    REGISTRY_CREDENTIAL = "docker-gate"
+    REGISTRY_CREDENTIAL = "docker-sant"
   }
 
   stages {
