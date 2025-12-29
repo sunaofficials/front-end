@@ -39,17 +39,17 @@ pipeline {
     }
 
     stage('Update GitOps Repo') {
-      steps {
-        git credentialsId: 'github-creds',
-            url: 'https://github.com/sunaofficials/sockshop-gitops.git'
+  steps {
+    dir('gitops') {
+      git credentialsId: 'github-creds',
+          url: 'https://github.com/sunaofficials/sockshop-gitops.git'
 
-        sh '''
-          sed -i "s|image:.*|image: $IMAGE_NAME:$TAG|" frontend/deployment.yaml
-          git add frontend/deployment.yaml
-          git commit -m "Update frontend image to $TAG"
-          git push
-        '''
-      }
+      sh '''
+        sed -i "s|image:.*|image: $IMAGE_NAME:$TAG|" frontend/deployment.yaml
+        git add frontend/deployment.yaml
+        git commit -m "Update frontend image to $TAG"
+        git push
+      '''
     }
   }
 }
