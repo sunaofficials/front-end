@@ -46,10 +46,12 @@ pipeline {
               url: 'https://github.com/sunaofficials/sockshop-gitops.git'
 
           sh '''
+            git config user.email "ssn@architect.com"
+            git config user.name "ssn"
             sed -i "s|image:.*|image: $IMAGE_NAME:$TAG|" frontend/deployment.yaml
             git add frontend/deployment.yaml
             git commit -m "Update frontend image to $TAG"
-            git push
+            git push origin main
           '''
         }
       }
