@@ -3,50 +3,51 @@ pipeline {
 
   environment {
     IMAGE_NAME = "sunaodisha/sockshop-frontend"
-    REGISTRY_CREDENTIAL = "docker-sant"
+    TAG = "${BUILD_NUMBER}"
   }
 
   stages {
 
     stage('Checkout') {
       steps {
-        checkout scm
+        git credentialsId: 'github-sant',
+            url: 'https://github.com/sunaofficials/front-end.git'
       }
     }
 
     stage('Build Docker Image') {
       steps {
         sh '''
-        cd front-end
-        docker build -t $IMAGE_NAME:$BUILD_NUMBER .
+          docker build -t $IMAGE_NAME:$TAG .
         '''
       }
     }
 
     stage('Push Image') {
       steps {
-        script {
-          docker.withRegistry('https://index.docker.io/v1/', REGISTRY_CREDENTIAL) {
-            sh "docker push $IMAGE_NAME:$BUILD_NUMBER"
-          }
+        withCredentials([usernamePassword(
+          credentialsId: 'docker-sant',
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+        )]) {
+          sh '''
+            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+            docker push $IMAGE_NAME:$TAG
+          '''
         }
       }
     }
 
     stage('Update GitOps Repo') {
       steps {
+        git credentialsId: 'github-creds',
+            url: 'https://github.com/sunaofficials/sockshop-gitops.git'
+
         sh '''
-        rm -rf sockshop-gitops
-        git clone https://github.com/sunaofficials/sockshop-gitops.git
-        cd sockshop-gitops/frontend
-
-        sed -i "s|image:.*|image: $IMAGE_NAME:$BUILD_NUMBER|g" deployment.yaml
-
-        git config user.email "santanu.nayak@harman.com"
-        git config user.name "Santanu"
-        git add .
-        git commit -m "Update frontend image to $BUILD_NUMBER"
-        git push
+          sed -i "s|image:.*|image: $IMAGE_NAME:$TAG|" frontend/deployment.yaml
+          git add frontend/deployment.yaml
+          git commit -m "Update frontend image to $TAG"
+          git push
         '''
       }
     }
