@@ -41,7 +41,8 @@ pipeline {
     stage('Update GitOps Repo') {
       steps {
         dir('gitops') {
-          git credentialsId: 'github-creds',
+          git credentialsId: 'github-sant',
+              branch: 'main',
               url: 'https://github.com/sunaofficials/sockshop-gitops.git'
 
           sh '''
