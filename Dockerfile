@@ -1,19 +1,25 @@
-FROM node:10-alpine
-ENV NODE_ENV "production"
-ENV PORT 8079
+FROM node:18-alpine AS build
+
+WORKDIR /app
+
+# copy package files first (cache-friendly)
+COPY package*.json ./
+COPY yarn.lock ./
+
+RUN yarn install --frozen-lockfile
+
+# copy rest of the app
+COPY . .
+
+# Sock Shop frontend is a Node server (not React static build)
+# so NO npm run build required
+
+# -------- Runtime stage --------
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY --from=build /app .
+
 EXPOSE 8079
-RUN addgroup mygroup && adduser -D -G mygroup myuser && mkdir -p /usr/src/app && chown -R myuser /usr/src/app
-
-# Prepare app directory
-WORKDIR /usr/src/app
-COPY package.json /usr/src/app/
-COPY yarn.lock /usr/src/app/
-RUN chown myuser /usr/src/app/yarn.lock
-
-USER myuser
-RUN yarn install
-
-COPY . /usr/src/app
-
-# Start the app
-CMD ["/usr/local/bin/npm", "start"]
+CMD ["node", "server.js"]
