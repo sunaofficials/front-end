@@ -47,7 +47,7 @@ pipeline {
 
           sh '''
             git config user.email "ssn@architect.com"
-            git config user.name "ssn"
+            git config user.name "sunaofficials"
             sed -i "s|image:.*|image: $IMAGE_NAME:$TAG|" frontend/deployment.yaml
             git add frontend/deployment.yaml
             git commit -m "Update frontend image to $TAG"
